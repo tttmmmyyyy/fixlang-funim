@@ -3,7 +3,10 @@
 name = "funim"
 
 ## Project version (in semver). This is a required field.
-version = "0.4.4"
+version = "0.4.5"
+
+## Fix version requirement. Default is "*".
+fix_version = "1.2.0"
 
 ## Project authors.
 # authors = ["Alice", "Bob"]
@@ -94,11 +97,11 @@ version = "0.2.0"
 git = { url = "https://github.com/tttmmmyyyy/fixlang-cairo.git" }
 
 [[dependencies]]
-name = "misc-algos"
-version = "0.7.0"
-git = { url = "https://github.com/tttmmmyyyy/fixlang-misc-algos.git" }
-
-[[dependencies]]
 name = "time"
 version = "1.0.1"
 git = { url = "https://github.com/tttmmmyyyy/fixlang-time.git" }
+
+[[dependencies]]
+name = "misc-algos"
+version = "0.11.0"
+git = { url = "https://github.com/tttmmmyyyy/fixlang-misc-algos.git" }

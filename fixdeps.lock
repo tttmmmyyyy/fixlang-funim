@@ -1,40 +1,40 @@
-proj_file_hash = "4f7d7a55e712fe7e611dfe0bd3c9c187"
+proj_file_hash = "f438e700dd23d17c397892bdaaa7df0a"
 
 [[dependencies]]
 name = "misc-algos"
-version = "0.7.0"
-path = ".fixlang/deps/misc-algos_0.7.0"
+version = "0.11.0"
+path = ".fixlang/deps/misc-algos_0.11.0"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-misc-algos.git"
-rev = "4467593c7a6e510834c496a5e64571dddb615609"
+rev = "2f0052a7795ec7e14d4974150be66c6e9b8d22bb"
 
 [[dependencies]]
 name = "binary-heap"
-version = "0.1.1"
-path = ".fixlang/deps/binary-heap_0.1.1"
+version = "0.2.0"
+path = ".fixlang/deps/binary-heap_0.2.0"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-binary-heap.git"
-rev = "3b7972d5ec6ff814db5de4f6ade3c83dd9c8d4e7"
+rev = "1ea2a2465fb42878fbace135fd7a30014b1cafab"
+
+[[dependencies]]
+name = "bool-array"
+version = "0.1.1"
+path = ".fixlang/deps/bool-array_0.1.1"
+
+[dependencies.git]
+repo = "https://github.com/tttmmmyyyy/bool-array.git"
+rev = "608a7dfded55c6f9373347a5324c28f5ccfabbbf"
 
 [[dependencies]]
 name = "math"
-version = "1.1.2"
-path = ".fixlang/deps/math_1.1.2"
+version = "1.2.0"
+path = ".fixlang/deps/math_1.2.0"
 
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-math.git"
-rev = "bac9ade9118530115eda0a302ade1bb0d6bd928b"
-
-[[dependencies]]
-name = "time"
-version = "1.0.1"
-path = ".fixlang/deps/time_1.0.1"
-
-[dependencies.git]
-repo = "https://github.com/tttmmmyyyy/fixlang-time.git"
-rev = "53b35d9adc0de54ad87fe6b06c4baa6afa38a2b4"
+rev = "663bdee5f5ee2824e9e139cfdb097d6e56a4b1bb"
 
 [[dependencies]]
 name = "cairo-fix"
@@ -44,3 +44,12 @@ path = ".fixlang/deps/cairo-fix_0.2.1"
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-cairo.git"
 rev = "a43d27c1015b30f2b25e0ba70212f2bf0f49c2b3"
+
+[[dependencies]]
+name = "time"
+version = "1.0.2"
+path = ".fixlang/deps/time_1.0.2"
+
+[dependencies.git]
+repo = "https://github.com/tttmmmyyyy/fixlang-time.git"
+rev = "7af8a5c115e7437f94dcb4353807c03d816856f6"
