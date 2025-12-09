@@ -6,11 +6,12 @@ module Funim;
 import Cairo;
 import Cairo.XlibSurface;
 import Cairo.ImageSurface;
-import Time hiding {Time};
+import Time hiding Time;
 import MiscAlgos.Geometry;
 import MiscAlgos.Functional;
-
 import Funim.Machine;
+import Math::ceil;
+import BinaryHeap.BinaryArrayTree::BinaryArrayTree;
 
 type TimeDelta = F64;
 type Time = F64;
@@ -149,6 +150,31 @@ namespace Config {
             length : some(length),
         }
     );
+
+    // Get the width required for frame number display in encoding mode.
+    // This is used to zero-pad the frame numbers in the output file names.
+    // 
+    // # Parameters
+    // * `config`
+    _frame_no_width : Config -> I64;
+    _frame_no_width = |config| (
+        if config.@length.is_none { 0 };
+        let total_frames = (config.@length.as_some * config.@fps).ceil.to_I64;
+        total_frames.to_string.get_size.to_I64
+    );
+
+    // Get the string of the frame number with zero padding for encoding mode.
+    // 
+    // # Parameters
+    // * `config`
+    // * `frame_no`
+    _frame_no_string : Config -> I64 -> String;
+    _frame_no_string = |config, frame_no| (
+        let width = Config::_frame_no_width(config);
+        if width == 0 { frame_no.to_string };
+        let frame_str = frame_no.to_string;
+        range(0, width - frame_str.get_size.to_I64).map(|_| "0").concat_iter + frame_str
+    );
 }
 
 // Create a window and run the animation
@@ -219,7 +245,7 @@ run_animation = |ani, config| (
         match config.@encode {
             // Save the drawing result to the specified directory
             some(encode_dir) => (
-                let file_name = encode_dir + "/" + frame.to_string + ".png";
+                let file_name = encode_dir + "/" + Config::_frame_no_string(config, frame) + ".png";
                 surface.write_to_png(file_name)
             ),
             none() => pure()
