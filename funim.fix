@@ -12,6 +12,7 @@ import MiscAlgos.Functional;
 import Funim.Machine;
 import Math::ceil;
 import BinaryHeap.BinaryArrayTree::BinaryArrayTree;
+import Minilib.IO.FileSystem::make_dirs;
 
 type TimeDelta = F64;
 type Time = F64;
@@ -193,6 +194,14 @@ run_animation = |ani, config| (
     let cairo = *Cairo::create(surface);
 
     let encode_mode = config.@encode.is_some;
+
+    match config.@encode {
+        // Create the output directory if it does not exist
+        some(encode_dir) => (
+            make_dirs(encode_dir, some(0o755_U32)).try(|err| exit_with_msg(1, "Failed to create output directory: \"{}\". Error: {}".populate([encode_dir, err])))
+        ),
+        none() => pure()
+    };;
 
     // Main loop
     let start_time = (*Time::get_now_monotonic).to_F64;

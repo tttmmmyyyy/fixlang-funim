@@ -3,7 +3,7 @@
 name = "funim"
 
 ## Project version (in semver). This is a required field.
-version = "0.5.1"
+version = "0.5.2"
 
 ## Fix version requirement. Default is "*".
 fix_version = "1.2.0"
@@ -105,3 +105,9 @@ git = { url = "https://github.com/tttmmmyyyy/fixlang-time.git" }
 name = "misc-algos"
 version = "0.11.0"
 git = { url = "https://github.com/tttmmmyyyy/fixlang-misc-algos.git" }
+
+
+[[dependencies]]
+name = "minilib-io"
+version = "0.6.3"
+git = { url = "https://github.com/pt9999/fixlang-minilib-io.git" }
