@@ -3,16 +3,32 @@ A functional animation library.
 */
 module Funim;
 
-import Cairo;
-import Cairo.XlibSurface;
-import Cairo.ImageSurface;
-import Time hiding Time;
-import MiscAlgos.Geometry;
-import MiscAlgos.Functional;
-import Funim.Machine;
+import Cairo::{
+    create, fill, rectangle, restore, save, set_source_surface, translate, Cairo, Format::argb, 
+    Surface::write_to_png
+};
+import Cairo.ImageSurface::create;
+import Cairo.XlibSurface::{
+    create_back_surface, create_simple_window, destroy_window, events_queued, flush, keycode_to_keysym, 
+    next_event, select_input, string_to_keysym, swap_buffers, 
+    Event::{as_key_press, is_key_press, KeyEvent::@keycode}, EventMask::key_press, QueuedMode::already, 
+    XbeSwapAction::background
+};
+import Funim.Machine::{Machine::{from_transition_io, integrate, parallel, run}, Machine};
 import Math::ceil;
-import BinaryHeap.BinaryArrayTree::BinaryArrayTree;
 import Minilib.IO.FileSystem::make_dirs;
+import MiscAlgos.Functional::Tuple2::map01;
+import MiscAlgos.Geometry::{Rectangle::{@pos, @size}, Vec2::{make_from_tuple, to_tuple}, Rectangle, Vec2};
+import Std::{
+    loop_m, unsafe_is_unique, Add::add, Array::to_iter, Eq::eq, F64::{to_F64, to_I32, to_I64}, 
+    Functor::map, IO::{exit_with_msg, println, IOFail::try}, Iterator::{fold_m, map, range}, 
+    Monad::{bind, pure, when}, Not::not, Array, Arrow, Bool, Const, F64, I64, IO, Identity, Option, Path, 
+    String, Tuple0, Tuple2, Tuple3, U32, U8, Div::div, I64::{to_F64, to_I64}, LessThan::less_than, 
+    LoopState::{break_m, continue_m}, Mul::mul, Neg::neg, 
+    Option::{as_some, is_none, is_some, none, some}, String::{concat_iter, get_size, populate}, Sub::sub, 
+    ToString::to_string
+};
+import Time::{get_now_monotonic, to_F64};
 
 type TimeDelta = F64;
 type Time = F64;
