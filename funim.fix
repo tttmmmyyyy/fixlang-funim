@@ -4,8 +4,8 @@ A functional animation library.
 module Funim;
 
 import Cairo::{
-    create, fill, rectangle, restore, save, set_source_surface, translate, Format::argb, 
-    Surface::write_to_png, Cairo
+    create, fill, rectangle, restore, save, set_source_surface, translate, Cairo, Format::argb, 
+    Surface::write_to_png
 };
 import Cairo.ImageSurface::create;
 import Cairo.XlibSurface::{
@@ -14,17 +14,17 @@ import Cairo.XlibSurface::{
     Event::{as_key_press, is_key_press, KeyEvent::@keycode}, EventMask::key_press, QueuedMode::already, 
     XbeSwapAction::background
 };
-import Funim.Machine::{Machine::{from_transition_io, integrate, parallel, run}, Machine};
+import Funim.Machine::{Machine, Machine::{from_transition_io, integrate, parallel, run}};
 import Math::ceil;
 import Minilib.IO.FileSystem::make_dirs;
 import MiscAlgos.Functional::Tuple2::map01;
-import MiscAlgos.Geometry::{Rectangle::{@pos, @size}, Vec2::{make_from_tuple, to_tuple}, Rectangle, Vec2};
+import MiscAlgos.Geometry::{Rectangle, Vec2, Rectangle::{@pos, @size}, Vec2::{make_from_tuple, to_tuple}};
 import Std::{
-    loop_m, Array::to_iter, F64::{to_I32, to_I64}, Functor::map, I64::{to_F64, to_I64}, 
-    IO::{exit_with_msg, println, IOFail::try}, Iterator::{fold_m, map, range}, 
-    LoopState::{break_m, continue_m}, Monad::{pure, when}, 
+    loop_m, Array, Bool, F64, I64, IO, Option, Path, String, Array::to_iter, F64::{to_I32, to_I64}, 
+    Functor::map, I64::{to_F64, to_I64}, IO::{exit_with_msg, println, IOFail::try}, 
+    Iterator::{fold_m, map, range}, LoopState::{break_m, continue_m}, Monad::{pure, when}, 
     Option::{as_some, is_none, is_some, none, some}, String::{concat_iter, get_size, populate}, 
-    ToString::to_string, Array, Bool, F64, I64, IO, Option, Path, String
+    ToString::to_string
 };
 import Time::{get_now_monotonic, to_F64};
 

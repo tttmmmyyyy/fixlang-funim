@@ -1,7 +1,7 @@
 module Test;
 
 import Funim.Machine::test;
-import Std::{Monad::pure, IO};
+import Std::{IO, Monad::pure};
 
 test : IO ();
 test = (
