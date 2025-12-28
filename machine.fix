@@ -3,6 +3,12 @@
 // 
 module Funim.Machine;
 
+import Std::{
+    Array::{push_back, to_iter}, Debug::assert_eq, Functor::{forget, map}, 
+    Iterator::{fold_m, to_array, zip}, Monad::pure, Zero::zero, Additive, Array, Eq, Functor, IO, 
+    ToString
+};
+
 // A state machine that takes input of type i, changes its internal state, and outputs a value of type o
 type Machine i o = struct {
     _run : i -> IO (Machine i o, o),
