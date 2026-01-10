@@ -1,18 +1,18 @@
 /*
-Animation of the three-body problem
-
-A sample animation which are defined by: 
-- the state transition function which determines the state at time t + dt by the state at time t, and
-- the rendering function which draws the state.
+Conway's Game of Life
 */
 module Main;
 
-import Funim;
-import Funim.Machine;
-import Cairo;
-import Math;
-import MiscAlgos.Geometry;
-import Random;
+import Cairo::{fill, rectangle, set_source_rgb, Cairo};
+import Funim::{run_animation, TimeDelta, Config::default};
+import Funim.Machine::Machine::from_transition;
+import MiscAlgos.Functional::Tuple2::map01;
+import Random::{generate_U64, init_by_seed, Random};
+import Std::{
+    loop, Array, Bool, F64, I64, IO, Array::{fill, mod, set, @}, Functor::map, 
+    Iterator::{fold, loop_iter_m, product, range}, LoopState::{break, continue, continue_m}, 
+    Monad::{pure, when}, ToF64::f64, ToU64::u64, Tuple2::{@0, @1}
+};
 
 // Screen size
 c_image_size : (I64, I64);
@@ -52,8 +52,8 @@ namespace State {
         )
     );
 
-    proceed_cells : State -> State;
-    proceed_cells = |state| (
+    update : TimeDelta -> State -> State;
+    update = |_, state| (
         let state = state.swap;
         let state = state.update_current;
         state
@@ -98,11 +98,13 @@ namespace State {
     render = |state, cairo| (
         cairo.set_source_rgb((1.0, 1.0, 1.0));;
 
-        Iterator::range(0, cells_count.@1).product(Iterator::range(0, cells_count.@0)).loop_iter_m((), |(y, x), _|
+        Iterator::range(0, cells_count.@1).product(range(0, cells_count.@0)).loop_iter_m((), |(y, x), _|
             let is_alive = state.@current_state.@(x).@(y);
+            let x = x - cells_count.@0 / 2;
+            let y = y - cells_count.@1 / 2;
             Monad::when(is_alive, 
-                let pos = ((x * cell_size.@0).to_F64, (y * cell_size.@1).to_F64);
-                let cell_size = (cell_size.@0.to_F64, cell_size.@1.to_F64);
+                let pos = (x * cell_size.@0, y * cell_size.@1).map01(f64);
+                let cell_size = cell_size.map01(f64);
                 cairo.rectangle(pos, cell_size)
             );;
             continue_m $ ()
@@ -118,8 +120,7 @@ main = (
     let config = Funim::Config::default(c_image_size);
     let state = Machine::from_transition(
         State::initialize.randomize(Random::init_by_seed(0.u64)).@1,
-        undefined("")
-        // |dt, s| let s = s.update(dt); (s, s)
+        |dt, s| let s = s.update(dt); (s, s)
     );
     let ani = state.map(State::render);
 

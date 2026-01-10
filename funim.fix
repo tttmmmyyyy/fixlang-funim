@@ -16,7 +16,7 @@ import Cairo.XlibSurface::{
 };
 import Funim.Machine::{Machine, Machine::{from_transition_io, integrate, parallel, run}};
 import Math::{ceil, floor};
-// import Minilib.IO.FileSystem::make_dirs;
+import Minilib.IO.FileSystem::make_dirs;
 import MiscAlgos.Functional::Tuple2::map01;
 import MiscAlgos.Geometry::{Rectangle, Vec2, Rectangle::{@pos, @size}, Vec2::{make_from_tuple, to_tuple}};
 import Std::{
@@ -25,10 +25,10 @@ import Std::{
     IO::{exit_with_msg, println, IOFail::try}, Iterator::{fold_m, map, range}, 
     LoopState::{break_m, continue_m}, Monad::{pure, when}, 
     Option::{as_some, is_none, is_some, none, some}, String::{concat_iter, get_size, populate}, 
-    ToF64::f64, ToI64::i64, ToString::to_string
+    ToF64::f64, ToI32::i32, ToI64::i64, ToString::to_string
 };
-import Time::{get_now_monotonic, to_F64};
 import Std::ToI64::i64;
+import Time::{get_now_monotonic, to_F64};
 
 type TimeDelta = F64;
 type Time = F64;
@@ -37,19 +37,25 @@ type Time = F64;
 clock : Machine TimeDelta Time;
 clock = Machine::integrate;
 
-// 離散的な機械をうけとり、それを周期的に進めるマシンを作成する。
-step_by : TimeDelta -> Machine () o -> Machine TimeDelta o;
-step_by = |dt_step, machine| Machine::from_transition_io((0.0, machine, none()), |dt, (accum_dt, machine, prev_out)|
-    let accum_dt = accum_dt + dt;
-    if prev_out.is_none {
-        let (machine, out) = *machine.run();
-        let prev_out = some(out);
-        ((accum_dt, machine, prev_out), out).pure
-    };
-    let count = (accum_dt / dt_step).floor.i64;
-    let accum_dt = accum_dt - (count.f64 * dt_step);
-    undefined("")
-);
+// // Given a discrete machine, create a continuous machine that advances it periodically.
+// // 
+// // Used to convert discrete state-changing machines, such as Game of Life, into animations.
+// step_by : TimeDelta -> Machine () o -> Machine TimeDelta o;
+// step_by = |dt_step, machine| Machine::from_transition_io((0.0, machine, none()), |dt, (accum_dt, machine, prev_out)|
+//     let accum_dt = accum_dt + dt;
+//     if prev_out.is_none {
+//         let (machine, out) = *machine.run();
+//         let prev_out = some(out);
+//         ((accum_dt, machine, prev_out), out).pure
+//     };
+//     let count = (accum_dt / dt_step).floor.i64;
+//     let accum_dt = accum_dt - (count.f64 * dt_step);
+//     let (machine, out) = *range(0, count).fold_m((machine, prev_out.as_some), |_, (machine, _)|
+//         let (machine, out) = *machine.run();
+//         (machine, out).pure
+//     );
+//     ((accum_dt, machine, some(out)), out).pure
+// );
 
 // Type for drawing operations.
 type Draw = Cairo -> IO ();
@@ -96,7 +102,7 @@ namespace Animation {
         let (surface, cairo, draw_buf) = *match opt_buffer {
             none() => ( // When not yet created
                 // Create the buffer and the context for drawing to it
-                let surface = *ImageSurface::create(Format::argb, rect.@size.to_tuple.map01(to_I32));
+                let surface = *ImageSurface::create(Format::argb, rect.@size.to_tuple.map01(i32));
                 let cairo = *Cairo::create(surface);
 
                 // Additionally, create a drawing operation that draws this buffer
@@ -228,8 +234,7 @@ run_animation = |ani, config| (
     match config.@encode {
         // Create the output directory if it does not exist
         some(encode_dir) => (
-            // make_dirs(encode_dir, some(0o755_U32)).try(|err| exit_with_msg(1, "Failed to create output directory: \"{}\". Error: {}".populate([encode_dir, err])))
-            pure()
+            make_dirs(encode_dir, some(0o755_U32)).try(|err| exit_with_msg(1, "Failed to create output directory: \"{}\". Error: {}".populate([encode_dir, err])))
         ),
         none() => pure()
     };;
