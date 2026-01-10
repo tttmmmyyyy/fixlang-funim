@@ -15,19 +15,17 @@ import Cairo.XlibSurface::{
     XbeSwapAction::background
 };
 import Funim.Machine::{Machine, Machine::{from_transition_io, integrate, parallel, run}};
-import Math::{ceil, floor};
+import Math::ceil;
 import Minilib.IO.FileSystem::make_dirs;
 import MiscAlgos.Functional::Tuple2::map01;
 import MiscAlgos.Geometry::{Rectangle, Vec2, Rectangle::{@pos, @size}, Vec2::{make_from_tuple, to_tuple}};
 import Std::{
-    loop_m, undefined, Array, Bool, F64, I64, IO, Option, Path, String, Array::to_iter, 
-    F64::{to_I32, to_I64}, Functor::map, I64::{to_F64, to_I64}, 
-    IO::{exit_with_msg, println, IOFail::try}, Iterator::{fold_m, map, range}, 
+    loop_m, Array, Bool, F64, I64, IO, Option, Path, String, Array::to_iter, F64::to_I64, Functor::map, 
+    I64::{to_F64, to_I64}, IO::{exit_with_msg, println, IOFail::try}, Iterator::{fold_m, map, range}, 
     LoopState::{break_m, continue_m}, Monad::{pure, when}, 
     Option::{as_some, is_none, is_some, none, some}, String::{concat_iter, get_size, populate}, 
-    ToF64::f64, ToI32::i32, ToI64::i64, ToString::to_string
+    ToI32::i32, ToString::to_string
 };
-import Std::ToI64::i64;
 import Time::{get_now_monotonic, to_F64};
 
 type TimeDelta = F64;

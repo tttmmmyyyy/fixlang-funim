@@ -1,6 +1,10 @@
 module Test.Machine;
 
 import Funim.Machine::{Machine, Machine::{integrate, run}};
+import Std::{
+    Array, Eq, IO, ToString, Array::to_iter, Debug::assert_eq, Functor::forget, 
+    Iterator::{fold_m, to_array, zip}, Monad::pure
+};
 
 test_machine : [o : Eq, o : ToString] Machine i o -> Array (i, o) -> IO ();
 test_machine = |machine, ios| (
