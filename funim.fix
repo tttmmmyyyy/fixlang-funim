@@ -15,18 +15,20 @@ import Cairo.XlibSurface::{
     XbeSwapAction::background
 };
 import Funim.Machine::{Machine, Machine::{from_transition_io, integrate, parallel, run}};
-import Math::ceil;
-import Minilib.IO.FileSystem::make_dirs;
+import Math::{ceil, floor};
+// import Minilib.IO.FileSystem::make_dirs;
 import MiscAlgos.Functional::Tuple2::map01;
 import MiscAlgos.Geometry::{Rectangle, Vec2, Rectangle::{@pos, @size}, Vec2::{make_from_tuple, to_tuple}};
 import Std::{
-    loop_m, Array, Bool, F64, I64, IO, Option, Path, String, Array::to_iter, F64::{to_I32, to_I64}, 
-    Functor::map, I64::{to_F64, to_I64}, IO::{exit_with_msg, println, IOFail::try}, 
-    Iterator::{fold_m, map, range}, LoopState::{break_m, continue_m}, Monad::{pure, when}, 
+    loop_m, undefined, Array, Bool, F64, I64, IO, Option, Path, String, Array::to_iter, 
+    F64::{to_I32, to_I64}, Functor::map, I64::{to_F64, to_I64}, 
+    IO::{exit_with_msg, println, IOFail::try}, Iterator::{fold_m, map, range}, 
+    LoopState::{break_m, continue_m}, Monad::{pure, when}, 
     Option::{as_some, is_none, is_some, none, some}, String::{concat_iter, get_size, populate}, 
-    ToString::to_string
+    ToF64::f64, ToI64::i64, ToString::to_string
 };
 import Time::{get_now_monotonic, to_F64};
+import Std::ToI64::i64;
 
 type TimeDelta = F64;
 type Time = F64;
@@ -34,6 +36,20 @@ type Time = F64;
 // The machine that outputs the current time.
 clock : Machine TimeDelta Time;
 clock = Machine::integrate;
+
+// 離散的な機械をうけとり、それを周期的に進めるマシンを作成する。
+step_by : TimeDelta -> Machine () o -> Machine TimeDelta o;
+step_by = |dt_step, machine| Machine::from_transition_io((0.0, machine, none()), |dt, (accum_dt, machine, prev_out)|
+    let accum_dt = accum_dt + dt;
+    if prev_out.is_none {
+        let (machine, out) = *machine.run();
+        let prev_out = some(out);
+        ((accum_dt, machine, prev_out), out).pure
+    };
+    let count = (accum_dt / dt_step).floor.i64;
+    let accum_dt = accum_dt - (count.f64 * dt_step);
+    undefined("")
+);
 
 // Type for drawing operations.
 type Draw = Cairo -> IO ();
@@ -212,7 +228,8 @@ run_animation = |ani, config| (
     match config.@encode {
         // Create the output directory if it does not exist
         some(encode_dir) => (
-            make_dirs(encode_dir, some(0o755_U32)).try(|err| exit_with_msg(1, "Failed to create output directory: \"{}\". Error: {}".populate([encode_dir, err])))
+            // make_dirs(encode_dir, some(0o755_U32)).try(|err| exit_with_msg(1, "Failed to create output directory: \"{}\". Error: {}".populate([encode_dir, err])))
+            pure()
         ),
         none() => pure()
     };;

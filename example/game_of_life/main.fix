@@ -1,0 +1,127 @@
+/*
+Animation of the three-body problem
+
+A sample animation which are defined by: 
+- the state transition function which determines the state at time t + dt by the state at time t, and
+- the rendering function which draws the state.
+*/
+module Main;
+
+import Funim;
+import Funim.Machine;
+import Cairo;
+import Math;
+import MiscAlgos.Geometry;
+import Random;
+
+// Screen size
+c_image_size : (I64, I64);
+c_image_size = (600, 600);
+
+// Cell size
+cells_count : (I64, I64) = (30, 30);
+
+cell_size : (I64, I64) = (
+    c_image_size.@0 / cells_count.@0,
+    c_image_size.@1 / cells_count.@1
+);
+
+type State = box struct {
+    prev_state : Array (Array Bool),
+    current_state : Array (Array Bool),
+};
+
+namespace State {
+    initialize : State;
+    initialize = (
+        let prev_state = Array::fill(cells_count.@0, Array::fill(cells_count.@1, false));
+        let current_state = Array::fill(cells_count.@0, Array::fill(cells_count.@1, false));
+        State {
+            prev_state : prev_state,
+            current_state : current_state,
+        }
+    );
+
+    randomize : Random -> State -> (Random, State);
+    randomize = |rand, state| (
+        Iterator::range(0, cells_count.@0).product(Iterator::range(0, cells_count.@1)).fold((rand, state), |(x, y), (rand, state)|
+            let (rand, alive) = rand.generate_U64;
+            let alive = alive % 2_U64 == 0_U64;
+            let state = state.mod_current_state(|current| current.mod(x, set(y, alive)));
+            (rand, state)
+        )
+    );
+
+    proceed_cells : State -> State;
+    proceed_cells = |state| (
+        let state = state.swap;
+        let state = state.update_current;
+        state
+    );
+
+    swap : State -> State;
+    swap = |state| (
+        let current_state = state.@current_state;
+        let prev_state = state.@prev_state;
+        state.set_prev_state(current_state).set_current_state(prev_state)
+    );
+
+    update_current : State -> State;
+    update_current = |state| (
+        let prev = state.@prev_state;
+        state.mod_current_state(|current| (
+            let cells = cells_count.@0 * cells_count.@1;
+            Iterator::range(0, cells).fold(current, |pos, current| (
+                let y = pos % cells_count.@1;
+                let x = pos / cells_count.@1;
+                let count = loop((0, 0), |(d, acc)|
+                    if d == 9 { break $ acc };
+                    let dx = d % 3 - 1;
+                    let dy = d / 3 - 1;
+                    if dx == 0 && dy == 0 { continue $ (d + 1, acc) };
+                    let x = (x + dx + cells_count.@0) % cells_count.@0;
+                    let y = (y + dy + cells_count.@1) % cells_count.@1;
+                    let acc = acc + if prev.@(x).@(y) { 1 } else { 0 };
+                    continue $ (d + 1, acc)
+                );
+                let alive = if prev.@(x).@(y) {
+                    count == 2 || count == 3
+                } else {
+                    count == 3
+                };
+                current.mod(x, set(y, alive))
+            )
+        ))
+    ));
+
+    render : State -> Cairo -> IO ();
+    render = |state, cairo| (
+        cairo.set_source_rgb((1.0, 1.0, 1.0));;
+
+        Iterator::range(0, cells_count.@1).product(Iterator::range(0, cells_count.@0)).loop_iter_m((), |(y, x), _|
+            let is_alive = state.@current_state.@(x).@(y);
+            Monad::when(is_alive, 
+                let pos = ((x * cell_size.@0).to_F64, (y * cell_size.@1).to_F64);
+                let cell_size = (cell_size.@0.to_F64, cell_size.@1.to_F64);
+                cairo.rectangle(pos, cell_size)
+            );;
+            continue_m $ ()
+        );;
+
+        cairo.fill;;
+        pure()
+    );
+}
+
+main : IO ();
+main = (
+    let config = Funim::Config::default(c_image_size);
+    let state = Machine::from_transition(
+        State::initialize.randomize(Random::init_by_seed(0.u64)).@1,
+        undefined("")
+        // |dt, s| let s = s.update(dt); (s, s)
+    );
+    let ani = state.map(State::render);
+
+    Funim::run_animation(ani, config)
+);

@@ -1,4 +1,9 @@
-proj_file_hash = "6d1076d64d2aec7c60e5918f80e0ab7f"
+proj_file_hash = "c20a22da1d0331827461b8deeb271df5"
+
+[[dependencies]]
+name = "funim"
+version = "0.5.4"
+path = "../../"
 
 [[dependencies]]
 name = "misc-algos"
@@ -53,3 +58,12 @@ path = ".fixlang/deps/cairo-fix_0.2.3"
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-cairo.git"
 rev = "df79daf220cd436e954c2914aa32c818b26f57b2"
+
+[[dependencies]]
+name = "random"
+version = "1.1.1"
+path = ".fixlang/deps/random_1.1.1"
+
+[dependencies.git]
+repo = "https://github.com/tttmmmyyyy/fixlang-random.git"
+rev = "b4f83ee48564e714c0918513dd431f9135493dce"
