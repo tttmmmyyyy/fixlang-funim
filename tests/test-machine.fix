@@ -1,0 +1,22 @@
+module Test.Machine;
+
+import Funim.Machine::{Machine, Machine::{integrate, run}};
+
+test_machine : [o : Eq, o : ToString] Machine i o -> Array (i, o) -> IO ();
+test_machine = |machine, ios| (
+    ios.to_iter.fold_m(machine, |(i, o), machine|
+        let (machine, o1) = *machine.run(i);
+        assert_eq(|_|"Test Fail", o1, o);;
+        pure $ machine
+    ).forget
+);
+
+test : IO ();
+test = (
+    let machine = Machine::integrate;
+    let input = [1, 2, 3, 4, 5];
+    let output = [0, 1, 3, 6, 10];
+    let ios = input.to_iter.zip(output.to_iter).to_array;
+    test_machine(machine, ios);;
+    pure()
+);

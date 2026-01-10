@@ -1,7 +1,8 @@
 module Test;
 
-import Funim.Machine::test;
+import EZS::{ez_cd, EZSConfig, EZSConfig::default};
 import Std::{IO, Monad::pure};
+import Test.Machine::test;
 
 test : IO ();
 test = (
