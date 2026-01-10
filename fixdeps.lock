@@ -37,22 +37,31 @@ repo = "https://github.com/tttmmmyyyy/fixlang-math.git"
 rev = "663bdee5f5ee2824e9e139cfdb097d6e56a4b1bb"
 
 [[dependencies]]
+name = "time"
+version = "1.0.2"
+path = ".fixlang/deps/time_1.0.2"
+
+[dependencies.git]
+repo = "https://github.com/tttmmmyyyy/fixlang-time.git"
+rev = "7af8a5c115e7437f94dcb4353807c03d816856f6"
+
+[[dependencies]]
+name = "cairo-fix"
+version = "0.2.3"
+path = ".fixlang/deps/cairo-fix_0.2.3"
+
+[dependencies.git]
+repo = "https://github.com/tttmmmyyyy/fixlang-cairo.git"
+rev = "df79daf220cd436e954c2914aa32c818b26f57b2"
+
+[[dependencies]]
 name = "minilib-io"
-version = "0.6.3"
-path = ".fixlang/deps/minilib-io_0.6.3"
+version = "0.6.8"
+path = ".fixlang/deps/minilib-io_0.6.8"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-io.git"
-rev = "f01ce75d1fcc795ab01c11793ee1b74083cd5136"
-
-[[dependencies]]
-name = "asynctask"
-version = "1.1.1"
-path = ".fixlang/deps/asynctask_1.1.1"
-
-[dependencies.git]
-repo = "https://github.com/tttmmmyyyy/fixlang-asynctask.git"
-rev = "3503235c2dc926d2ae2a937a338752b28ef6770f"
+rev = "7c404892ff7f89076716894770ab037f2d876099"
 
 [[dependencies]]
 name = "hashmap"
@@ -73,31 +82,31 @@ repo = "https://github.com/tttmmmyyyy/fixlang-hash.git"
 rev = "40d5d04e9b5f5a11c46151d00a98acb6dfdb4e48"
 
 [[dependencies]]
-name = "time"
-version = "1.0.2"
-path = ".fixlang/deps/time_1.0.2"
+name = "asynctask"
+version = "1.1.4"
+path = ".fixlang/deps/asynctask_1.1.4"
 
 [dependencies.git]
-repo = "https://github.com/tttmmmyyyy/fixlang-time.git"
-rev = "7af8a5c115e7437f94dcb4353807c03d816856f6"
+repo = "https://github.com/tttmmmyyyy/fixlang-asynctask.git"
+rev = "b9ea025db98fce8ebb2b05623320b2404c9f3879"
 
 [[dependencies]]
 name = "minilib-binary"
-version = "0.5.3"
-path = ".fixlang/deps/minilib-binary_0.5.3"
+version = "0.5.5"
+path = ".fixlang/deps/minilib-binary_0.5.5"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-binary.git"
-rev = "22933971ce4b1c62ee2238854475760f51f4021a"
+rev = "7d21c3827c575cd2aba0b32d7e3f31c29dbe4c1b"
 
 [[dependencies]]
 name = "minilib-common"
-version = "0.7.3"
-path = ".fixlang/deps/minilib-common_0.7.3"
+version = "0.8.2"
+path = ".fixlang/deps/minilib-common_0.8.2"
 
 [dependencies.git]
 repo = "https://github.com/pt9999/fixlang-minilib-common.git"
-rev = "cb4eadaa81f8fd4bb3cf011ccbb214d77db84a89"
+rev = "17326cfc04df39190b71ae85d3cb6a08a7f57948"
 
 [[dependencies]]
 name = "character"
@@ -107,12 +116,3 @@ path = ".fixlang/deps/character_1.0.1"
 [dependencies.git]
 repo = "https://github.com/tttmmmyyyy/fixlang-character.git"
 rev = "fd75a6634ec0c919f2d1703112d25da9a3c2346e"
-
-[[dependencies]]
-name = "cairo-fix"
-version = "0.2.1"
-path = ".fixlang/deps/cairo-fix_0.2.1"
-
-[dependencies.git]
-repo = "https://github.com/tttmmmyyyy/fixlang-cairo.git"
-rev = "a43d27c1015b30f2b25e0ba70212f2bf0f49c2b3"

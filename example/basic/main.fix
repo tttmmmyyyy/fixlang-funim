@@ -27,7 +27,8 @@ c_radius = 100.0;
 
 main : IO ();
 main = (
-    let config = Funim::Config::encode(c_image_size, 60.0, "output");
+    // let config = Funim::Config::encode(c_image_size, 60.0, "output");
+    let config = Funim::Config::default(c_image_size);
     let pos = Funim::clock.map(|t|
         let v = Vec2::make(c_radius, 0.0);
         v.rotated(t * 2.0 * pi64 / 3.0)
