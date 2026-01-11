@@ -3,19 +3,17 @@ Parity Cellular Automaton
 */
 module Main;
 
-import AsyncTask::_get_io;
 import CPLib.Arithmetic::pmod;
-import CPLib.Bits::{bit_check, bit_clear, bit_set, ToStringBits::to_string_bits};
+import CPLib.Bits::{bit_check, ToStringBits::to_string_bits};
 import Cairo::{fill, rectangle, set_source_rgb, Cairo};
-import Funim::{clock, run_animation, Animation, TimeDelta, Config::{default, set_fps}};
-import Funim.Machine::Machine::{compose, from_transition, from_transition_io};
+import Funim::{run_animation, Animation, TimeDelta, Config::{default, set_fps}};
+import Funim.Machine::Machine::from_transition_io;
 import MiscAlgos.Functional::Tuple2::map01;
 import Random::{generate_U64, init_by_seed, Random};
 import Std::{
-    loop, undefined, Array, Bool, F64, I64, IO, U32, Array::{@, fill, mod, set}, Functor::map, 
-    IO::println, Indexable::iset, Iterator::{fold, loop_iter_m, product, range}, 
-    LoopState::{break, continue, continue_m}, Monad::{pure, when}, ToF64::f64, ToI64::i64, 
-    ToString::to_string, ToU32::u32, ToU64::u64, Tuple2::{@0, @1}
+    Array, Bool, F64, I64, IO, U32, Array::{fill, mod, set, @}, Functor::map, IO::println, 
+    Indexable::iset, Iterator::{fold, loop_iter_m, product, range}, LoopState::continue_m, 
+    Monad::{pure, when}, ToF64::f64, ToI64::i64, ToU32::u32, ToU64::u64, Tuple2::{@0, @1}
 };
 import Time::{get_now, to_F64};
 
@@ -180,7 +178,7 @@ main = (
 
     let (rng, state) = state.randomize_rule(rng);
     // Or specify a fixed rule here:
-    // let state = state.set_rule(0b001111101100011001000010000001_U32);
+    let state = state.set_rule(0b001111101100011001000010000001_U32);
 
     let ani = state.animate;
     let config = Funim::Config::default(c_image_size).set_fps(60.f64);    
@@ -198,12 +196,13 @@ main = (
 // 0b001100000100111010100010010101_U32
 // 0b110000000011111000010110100111_U32
 
-// Pattern generation
+// Crystals
 // 0b010100100110001101000000100010_U32
 // 0b101011011001010001001000111100_U32
-// 0b110111100000011100000011011100_U32
-// 0b111011011000010110100010001001_U32
 // 0b001111101100011001000010000001_U32
+
+// Pattern generation
+// 0b111011011000010110100010001001_U32
 
 // Particle 
 // 0b100110111010001111101101101010_U32
