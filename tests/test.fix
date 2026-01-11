@@ -1,10 +1,32 @@
 module Test;
 
-import Std::{IO, Monad::pure};
+import EZS::{cd, run_o, Context, Context::default};
+import Std::{
+    IO, Functor::map, IO::println, Iterator::{filter, fold_m, map, to_array}, Monad::pure, 
+    String::{is_empty, split, strip_spaces}, ToString::to_string
+};
 import Test.Machine::test;
 
 test : IO ();
 test = (
     Machine::test;;
+    test_examples;;    
+    pure()
+);
+
+// Verify that all examples build correctly
+test_examples : IO () = (
+    let ctx = EZS::Context::default;
+    ctx.cd("example");;
+    let examples = *ctx.run_o(["ls"]);
+    let examples = examples.split("\n").map(strip_spaces).filter(|s| !s.is_empty);
+    examples.fold_m((), |example, _|
+        ctx.cd(example);;
+        println("Testing example: " + example);;
+        ctx.run_o(["fix", "deps", "update"]);;
+        ctx.run_o(["fix", "build"]);;
+        ctx.cd("..")
+    );;
+    ctx.cd("..");;
     pure()
 );
