@@ -183,8 +183,8 @@ main = (
     let state = state.set_rule(0b110000000011111000010110100111_U32);
 
     let ani = state.animate;
-    let config = Funim::Config::default(c_image_size).set_fps(60.f64);    
-    // let config = Funim::Config::encode(c_image_size, 30.0, "out_" + rule.i64.to_string_bits(30));
+    let config = Funim::Config::default(c_image_size).set_fps(60.f64);
+    // let config = Funim::Config::encode(c_image_size, 10.0, "images");
     Funim::run_animation(ani, config)
 
 );

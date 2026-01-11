@@ -1,5 +1,7 @@
 # Parity Cellular Automaton
 
+[animation.gif](animation.gif)
+
 ## Overview
 
 This is an implementation of a type of cellular automaton.
