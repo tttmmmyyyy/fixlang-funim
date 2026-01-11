@@ -7,11 +7,15 @@ A sample animation which are defined by:
 */
 module Main;
 
-import Funim;
-import Funim.Machine;
-import Cairo;
-import Math;
-import MiscAlgos.Geometry;
+import Cairo::{arc, fill, new_sub_path, set_source_rgb, Cairo};
+import Funim::{run_animation, TimeDelta, Config::default};
+import Funim.Machine::Machine::from_transition;
+import Math::pi64;
+import MiscAlgos.Geometry::{Vec2, Vec2::{make, rotated, scaled, to_tuple, @length}};
+import Std::{
+    Array, F64, I64, IO, Array::{push_back, to_iter, @}, Functor::map, 
+    Iterator::{filter, fold, fold_m, map, range}
+};
 
 // Screen size
 c_image_size : (I64, I64);

@@ -18,9 +18,10 @@ import Std::{
 c_image_size : (I64, I64);
 c_image_size = (600, 600);
 
-// Cell size
+// Number of cells in each dimension
 cells_count : (I64, I64) = (30, 30);
 
+// Size in pixels of each cell
 cell_size : (I64, I64) = (
     c_image_size.@0 / cells_count.@0,
     c_image_size.@1 / cells_count.@1

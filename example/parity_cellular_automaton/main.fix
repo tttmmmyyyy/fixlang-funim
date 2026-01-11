@@ -1,0 +1,219 @@
+/*
+Parity Cellular Automaton
+*/
+module Main;
+
+import AsyncTask::_get_io;
+import CPLib.Arithmetic::pmod;
+import CPLib.Bits::{bit_check, bit_clear, bit_set, ToStringBits::to_string_bits};
+import Cairo::{fill, rectangle, set_source_rgb, Cairo};
+import Funim::{clock, run_animation, Animation, TimeDelta, Config::{default, set_fps}};
+import Funim.Machine::Machine::{compose, from_transition, from_transition_io};
+import MiscAlgos.Functional::Tuple2::map01;
+import Random::{generate_U64, init_by_seed, Random};
+import Std::{
+    loop, undefined, Array, Bool, F64, I64, IO, U32, Array::{@, fill, mod, set}, Functor::map, 
+    IO::println, Indexable::iset, Iterator::{fold, loop_iter_m, product, range}, 
+    LoopState::{break, continue, continue_m}, Monad::{pure, when}, ToF64::f64, ToI64::i64, 
+    ToString::to_string, ToU32::u32, ToU64::u64, Tuple2::{@0, @1}
+};
+import Time::{get_now, to_F64};
+
+// Screen size
+c_image_size : (I64, I64);
+c_image_size = (600, 600);
+
+// Number of cells in each dimension
+cells_count : (I64, I64) = (300, 300);
+
+// Size in pixels of each cell
+cell_size : (I64, I64) = (
+    c_image_size.@0 / cells_count.@0,
+    c_image_size.@1 / cells_count.@1
+);
+
+// Wrap cell position around the edges
+wrap_pos : (I64, I64) -> (I64, I64) = |(x, y)| (
+    (x.pmod(cells_count.@0), y.pmod(cells_count.@1))
+);
+
+// Check if cell is alive, returning 1 if alive, 0 if dead.
+is_alive_i64 : (I64, I64) -> Array (Array Bool) -> I64 = |(x, y), state| (
+    if state.@(x).@(y) { 1 } else { 0 }
+);
+
+// Cellular automaton rule type, encoded as a 32-bit unsigned integer.
+type Rule = U32;
+
+namespace Rule {
+    is_alive : Bool -> I64 -> I64 -> Rule -> Bool;
+    is_alive = |self, n_alive_1, n_alive_2, rule| (
+        // 0 <= n_alive_1 <= 4
+        // 0 <= n_alive_2 <= 2
+
+        // Encode the state into an index
+        let self = if self { 1 } else { 0 };
+        let index = self; // 0 <= index < 2
+        let index = index * (4 + 1) + n_alive_1; // 0 <= index < 10
+        let index = index * (2 + 1) + n_alive_2; // 0 <= index < 30
+
+        rule.i64.bit_check(index)
+    );
+}
+
+type State = box struct {
+    prev_state : Array (Array Bool),
+    current_state : Array (Array Bool),
+    rule : Rule,
+};
+
+namespace State {
+    initialize : State;
+    initialize = (
+        let prev_state = Array::fill(cells_count.@0, Array::fill(cells_count.@1, false));
+        let current_state = Array::fill(cells_count.@0, Array::fill(cells_count.@1, false));
+        State {
+            prev_state : prev_state,
+            current_state : current_state,
+            rule : 0.u32,
+        }
+    );
+
+    randomize_cells : Random -> State -> (Random, State);
+    randomize_cells = |rand, state| (
+        Iterator::range(0, cells_count.@0).product(Iterator::range(0, cells_count.@1)).fold((rand, state), |(x, y), (rand, state)|
+            let (rand, alive) = rand.generate_U64;
+            let alive = alive % 2_U64 == 0_U64;
+            let state = state.mod_current_state(|current| current.mod(x, set(y, alive)));
+            (rand, state)
+        )
+    );
+
+    randomize_rule : Random -> State -> (Random, State);
+    randomize_rule = |rand, state| (
+        let (rand, rule) = rand.generate_U64;
+        let state = state.set_rule(rule.u32);
+        (rand, state)
+    );
+
+    update : TimeDelta -> State -> State;
+    update = |_, state| (
+        let state = state.swap;
+        let state = state.update_current;
+        state
+    );
+
+    swap : State -> State;
+    swap = |state| (
+        let current_state = state.@current_state;
+        let prev_state = state.@prev_state;
+        state.set_prev_state(current_state).set_current_state(prev_state)
+    );
+
+    update_current : State -> State;
+    update_current = |state| (
+        let prev = state.@prev_state;
+        let rule = state.@rule;
+        state.mod_current_state(|current| (
+            let cells = cells_count.@0 * cells_count.@1;
+            Iterator::range(0, cells).fold(current, |pos, current| (
+                let x = pos / cells_count.@1;
+                let y = pos % cells_count.@1;
+                let n_alive_1 = prev.is_alive_i64((x, y-1).wrap_pos)
+                                + prev.is_alive_i64((x-1, y).wrap_pos)
+                                + prev.is_alive_i64((x+1, y).wrap_pos)
+                                + prev.is_alive_i64((x, y+1).wrap_pos);
+                let parity = (x + y) % 2;
+                let n_alive_2 = if parity == 0 {
+                    prev.is_alive_i64((x-1, y-1).wrap_pos) + prev.is_alive_i64((x+1, y+1).wrap_pos)
+                } else {
+                    prev.is_alive_i64((x-1, y+1).wrap_pos) + prev.is_alive_i64((x+1, y-1).wrap_pos)
+                };
+                let alive = rule.is_alive(current.@(x).@(y), n_alive_1, n_alive_2);
+                current[x][y].iset(alive)
+            )
+        ))
+    ));
+
+    render : State -> Cairo -> IO ();
+    render = |state, cairo| (
+        cairo.set_source_rgb((1.0, 1.0, 1.0));;
+
+        Iterator::range(0, cells_count.@1).product(range(0, cells_count.@0)).loop_iter_m((), |(y, x), _|
+            let is_alive = state.@current_state.@(x).@(y);
+            let x = x - cells_count.@0 / 2;
+            let y = y - cells_count.@1 / 2;
+            Monad::when(is_alive, 
+                let pos = (x * cell_size.@0, y * cell_size.@1).map01(f64);
+                let cell_size = cell_size.map01(f64);
+                cairo.rectangle(pos, cell_size)
+            );;
+            continue_m $ ()
+        );;
+
+        cairo.fill;;
+        pure()
+    );
+
+    animate : State -> Animation;
+    animate = |state| (
+        let state = Machine::from_transition_io(
+            state,
+            |dt, s| (
+                let rule = s.@rule.i64;
+                println("Rule: 0b" + rule.to_string_bits(30) + "_U32");;
+                let s = s.update(dt);
+                let s = s.update(dt);
+                pure $ (s, s)
+            )
+        );
+        let ani = state.map(State::render);
+        ani
+    );
+}
+
+main : IO ();
+main = (
+    let time = *Time::get_now;
+    let rng = Random::init_by_seed(time.to_F64.u64);
+    let (rng, state) = State::initialize.randomize_cells(rng);
+
+    let (rng, state) = state.randomize_rule(rng);
+    // Or specify a fixed rule here:
+    // let state = state.set_rule(0b001111101100011001000010000001_U32);
+
+    let ani = state.animate;
+    let config = Funim::Config::default(c_image_size).set_fps(60.f64);    
+    Funim::run_animation(ani, config)
+
+);
+
+// Interesting rules;
+
+// Bubble
+// 0b111011000000101110111001011011_U32
+// 0b111101001101010101010011011011_U32
+
+// Bubble with different visual regions
+// 0b001100000100111010100010010101_U32
+// 0b110000000011111000010110100111_U32
+
+// Pattern generation
+// 0b010100100110001101000000100010_U32
+// 0b101011011001010001001000111100_U32
+// 0b110111100000011100000011011100_U32
+// 0b111011011000010110100010001001_U32
+// 0b001111101100011001000010000001_U32
+
+// Particle 
+// 0b100110111010001111101101101010_U32
+// 0b110100001011000000111000100010_U32
+// 0b000101111111001011010011111100_U32
+
+// Noise
+// 0b011111111111111110101011100111_U32
+// 0b101101000100000001100111010000_U32
+// 0b011011101100000101000000000111_U32
+
+// Lines
+// 0b100110111100010110001011001101_U32

@@ -1,0 +1,197 @@
+module Main;
+
+import Cairo;
+import Cairo.XlibSurface;
+import Time;
+import Random;
+
+cells_count : (I64, I64);
+cells_count = (200, 200);
+
+cell_size : (I64, I64);
+cell_size = (3, 3);
+
+window_size : (I64, I64);
+window_size = (cells_count.@0 * cell_size.@0, cells_count.@1 * cell_size.@1);
+
+fps : F64;
+fps = 60.0;
+
+type GameState = box struct {
+    prev_state : Array (Array Bool),
+    current_state : Array (Array Bool),
+    drag_pos : Option (I64, I64),
+};
+
+namespace GameState {
+    initialize : GameState;
+    initialize = (
+        let prev_state = Array::fill(cells_count.@0, Array::fill(cells_count.@1, false));
+        let current_state = Array::fill(cells_count.@0, Array::fill(cells_count.@1, false));
+        GameState {
+            prev_state : prev_state,
+            current_state : current_state,
+            drag_pos : Option::none()
+        }
+    );
+
+    randomize : Random -> GameState -> (Random, GameState);
+    randomize = |rand, state| (
+        Iterator::range(0, cells_count.@0).product(Iterator::range(0, cells_count.@1)).fold((rand, state), |(x, y), (rand, state)|
+            let (rand, alive) = rand.generate_U64;
+            let alive = alive % 2_U64 == 0_U64;
+            let state = state.mod_current_state(|current| current.mod(x, set(y, alive)));
+            (rand, state)
+        )
+    );
+
+    proceed_cells : GameState -> GameState;
+    proceed_cells = |state| (
+        let state = state.swap;
+        let state = state.update_current;
+        state
+    );
+
+    swap : GameState -> GameState;
+    swap = |state| (
+        let current_state = state.@current_state;
+        let prev_state = state.@prev_state;
+        state.set_prev_state(current_state).set_current_state(prev_state)
+    );
+
+    update_current : GameState -> GameState;
+    update_current = |state| (
+        let prev = state.@prev_state;
+        state.mod_current_state(|current| (
+            let cells = cells_count.@0 * cells_count.@1;
+            Iterator::range(0, cells).fold(current, |pos, current| (
+                let y = pos % cells_count.@1;
+                let x = pos / cells_count.@1;
+                let count = loop((0, 0), |(d, acc)|
+                    if d == 9 { break $ acc };
+                    let dx = d % 3 - 1;
+                    let dy = d / 3 - 1;
+                    if dx == 0 && dy == 0 { continue $ (d + 1, acc) };
+                    let x = (x + dx + cells_count.@0) % cells_count.@0;
+                    let y = (y + dy + cells_count.@1) % cells_count.@1;
+                    let acc = acc + if prev.@(x).@(y) { 1 } else { 0 };
+                    continue $ (d + 1, acc)
+                );
+                let alive = if prev.@(x).@(y) {
+                    count == 2 || count == 3
+                } else {
+                    count == 3
+                };
+                current.mod(x, set(y, alive))
+            )
+        ))
+    ));
+
+    put_seed_around : Random -> (I64, I64) -> GameState -> (Random, GameState);
+    put_seed_around = |rng, (x, y), state| (
+        loop((rng, state, 0), |(rng, state, i)|
+            if i == 9 { break $ (rng, state) };
+            let dx = i % 3 - 1;
+            let dy = i / 3 - 1;
+            let (rng, alive) = rng.generate_U64;
+            let alive = alive % 2_U64 == 0_U64;
+            let x = (x + dx + cells_count.@0) % cells_count.@0;
+            let y = (y + dy + cells_count.@1) % cells_count.@1;
+            let state = state.mod_current_state(|current| current.mod(x, set(y, alive)));
+            continue $ (rng, state, i + 1)
+        )
+    );
+
+    render : Cairo -> GameState -> IO ();
+    render = |cairo, state| (
+        cairo.set_source_rgb((1.0, 1.0, 1.0));;
+
+        Iterator::range(0, cells_count.@1).product(Iterator::range(0, cells_count.@0)).loop_iter_m((), |(y, x), _|
+            let is_alive = state.@current_state.@(x).@(y);
+            Monad::when(is_alive, 
+                let pos = ((x * cell_size.@0).to_F64, (y * cell_size.@1).to_F64);
+                let cell_size = (cell_size.@0.to_F64, cell_size.@1.to_F64);
+                cairo.rectangle(pos, cell_size)
+            );;
+            continue_m $ ()
+        );;
+
+        cairo.fill;;
+        pure()
+    );
+}
+
+main : IO ();
+main = (
+    let window = *XlibSurface::create_simple_window(window_size);
+    let event_mask = EventMask::button_press.bit_or(EventMask::button_release).bit_or(EventMask::pointer_motion).bit_or(EventMask::key_press);
+    window.select_input(event_mask);;
+    
+    let surface = *XlibSurface::create_back_surface(window);
+    let cairo = *Cairo::create(surface);
+
+    let time = (*Time::get_now_monotonic).to_F64;
+    let rand = Random::init_by_seed(time.to_U64);
+    let (rand, state) = GameState::initialize.randomize(rand);
+
+    loop_m((state, rand, time), |(state, rand, prev_time)|
+        // First, process X events updating the state.
+        let opt_state = *loop_m(state, |state| (
+            if *window.events_queued(QueuedMode::already) == 0 { break_m $ Option::some(state) };
+            let event = *window.next_event;
+
+            let exit = *(
+                if !event.is_key_press { pure $ false };
+                let keycode = event.as_key_press.@keycode;
+                let keysym = *window.keycode_to_keysym(keycode);
+                let keysym_q = string_to_keysym("q");
+                pure $ keysym == keysym_q
+            );
+            if exit { break_m $ Option::none() };
+
+            let state = if event.is_button_press {
+                let event = event.as_button_press;
+                state.set_drag_pos(Option::some $ (event.@x.to_I64 / cell_size.@0, event.@y.to_I64 / cell_size.@1))
+            } else if event.is_button_release {
+                state.set_drag_pos(Option::none())
+            } else if event.is_motion_notify {
+                let event = event.as_motion_notify;
+                if state.@drag_pos.is_none { state };
+                state.set_drag_pos(Option::some $ (event.@x.to_I64 / cell_size.@0, event.@y.to_I64 / cell_size.@1))
+            } else {
+                state
+            };
+            continue_m $ state
+        ));
+
+        if opt_state.is_none { break_m $ () };
+        let state = opt_state.as_some;
+
+        // If the time since the last frame is less than the desired frame time, skip updateing the cells.
+        let now_time = (*Time::get_now_monotonic).to_F64;
+        if now_time - prev_time < 1.0 / fps { continue_m $ (state, rand, prev_time) };
+
+        // If the user is dragging, put a seed around the drag position.
+        let (rand, state) = if state.@drag_pos.is_some {
+            let (x, y) = state.@drag_pos.as_some;
+            state.put_seed_around(rand, (x,y))
+        } else {
+            (rand, state)
+        };
+
+        // Update the cells.
+        let (state, time) = consumed_time_while_lazy(|_| state.proceed_cells);
+        println("Time to update cells: " + time.to_string);;
+
+        // Render the cells.
+        state.render(cairo);;
+        window.flush;;
+        window.swap_buffers(XbeSwapAction::background);;
+
+        continue_m $ (state, rand, now_time)
+    );;
+
+    window.destroy_window;;
+
+    pure()
+);

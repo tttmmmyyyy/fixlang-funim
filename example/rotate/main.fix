@@ -5,13 +5,12 @@ A simple example where the drawing content can be calculated from the time t.
 */
 module Main;
 
-import Funim;
-import Funim.Machine;
-
-import Cairo;
-import Math;
-import MiscAlgos.Geometry;
-import MiscAlgos.Functional;
+import Cairo::{arc, fill, set_source_rgb};
+import Funim::{clock, run_animation, Config::default};
+import Math::pi64;
+import MiscAlgos.Functional::Tuple2::map01;
+import MiscAlgos.Geometry::Vec2::{make, make_from_tuple, rotated, to_tuple};
+import Std::{F64, I64, IO, Functor::map, I64::to_F64, Monad::pure};
 
 // FPS
 c_fps : F64;
