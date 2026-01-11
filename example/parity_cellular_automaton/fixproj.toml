@@ -1,6 +1,6 @@
 [general]
 ## Project name. This is a required field.
-name = "game-of-life"
+name = "parity-cellular-automaton"
 
 ## Project version (in semver). This is a required field.
 version = "0.1.0"
