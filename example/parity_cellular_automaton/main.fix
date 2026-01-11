@@ -6,14 +6,15 @@ module Main;
 import CPLib.Arithmetic::pmod;
 import CPLib.Bits::{bit_check, ToStringBits::to_string_bits};
 import Cairo::{fill, rectangle, set_source_rgb, Cairo};
-import Funim::{run_animation, Animation, TimeDelta, Config::{default, set_fps}};
+import Funim::{run_animation, Animation, TimeDelta, Config::{default, encode, set_fps}};
 import Funim.Machine::Machine::from_transition_io;
 import MiscAlgos.Functional::Tuple2::map01;
 import Random::{generate_U64, init_by_seed, Random};
 import Std::{
-    Array, Bool, F64, I64, IO, U32, Array::{fill, mod, set, @}, Functor::map, IO::println, 
-    Indexable::iset, Iterator::{fold, loop_iter_m, product, range}, LoopState::continue_m, 
-    Monad::{pure, when}, ToF64::f64, ToI64::i64, ToU32::u32, ToU64::u64, Tuple2::{@0, @1}
+    Array, Bool, F64, I64, IO, U32, Array::{@, fill, mod, set}, Functor::map, I8::{bit_xor, shift_left}, 
+    IO::println, Indexable::iset, Iterator::{fold, loop_iter_m, product, range}, LoopState::continue_m, 
+    Monad::{pure, when}, ToF64::f64, ToI64::i64, ToU32::u32, ToU64::u64, Tuple2::{@0, @1}, 
+    U32::{bit_xor, shift_left}
 };
 import Time::{get_now, to_F64};
 
@@ -176,23 +177,25 @@ main = (
     let rng = Random::init_by_seed(time.to_F64.u64);
     let (rng, state) = State::initialize.randomize_cells(rng);
 
-    let (rng, state) = state.randomize_rule(rng);
+    // Use random rule
+    // let (rng, state) = state.randomize_rule(rng);
     // Or specify a fixed rule here:
-    let state = state.set_rule(0b001111101100011001000010000001_U32);
+    let state = state.set_rule(0b110000000011111000010110100111_U32);
 
     let ani = state.animate;
     let config = Funim::Config::default(c_image_size).set_fps(60.f64);    
+    // let config = Funim::Config::encode(c_image_size, 30.0, "out_" + rule.i64.to_string_bits(30));
     Funim::run_animation(ani, config)
 
 );
 
-// Interesting rules;
+// Good rules;
 
 // Bubble
 // 0b111011000000101110111001011011_U32
 // 0b111101001101010101010011011011_U32
 
-// Bubble with different visual regions
+// Bubble with beams
 // 0b001100000100111010100010010101_U32
 // 0b110000000011111000010110100111_U32
 
@@ -203,6 +206,8 @@ main = (
 
 // Pattern generation
 // 0b111011011000010110100010001001_U32
+// 0b011000011011111010100010100101_U32 new
+// 0b001101011011111000010100110100_U32 new
 
 // Particle 
 // 0b100110111010001111101101101010_U32
@@ -214,5 +219,7 @@ main = (
 // 0b101101000100000001100111010000_U32
 // 0b011011101100000101000000000111_U32
 
-// Lines
+// CPU
 // 0b100110111100010110001011001101_U32
+// 0b100111111100010110001011001101_U32 new
+// 0b100110111110010110001011001101_U32 new
