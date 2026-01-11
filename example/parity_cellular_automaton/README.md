@@ -1,6 +1,6 @@
 # Parity Cellular Automaton
 
-[animation.gif](animation.gif)
+![Animation](animation.gif)
 
 ## Overview
 
