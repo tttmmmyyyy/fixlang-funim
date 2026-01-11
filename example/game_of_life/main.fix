@@ -4,12 +4,12 @@ Conway's Game of Life
 module Main;
 
 import Cairo::{fill, rectangle, set_source_rgb, Cairo};
-import Funim::{run_animation, TimeDelta, Config::{default, encode}};
+import Funim::{run_animation, TimeDelta, Config::default};
 import Funim.Machine::Machine::from_transition;
 import MiscAlgos.Functional::Tuple2::map01;
 import Random::{generate_U64, init_by_seed, Random};
 import Std::{
-    loop, Array, Bool, F64, I64, IO, Array::{@, fill, mod, set}, Functor::map, 
+    loop, Array, Bool, F64, I64, IO, Array::{fill, mod, set, @}, Functor::map, 
     Iterator::{fold, loop_iter_m, product, range}, LoopState::{break, continue, continue_m}, 
     Monad::{pure, when}, ToF64::f64, ToU64::u64, Tuple2::{@0, @1}
 };
